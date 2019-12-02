@@ -17,11 +17,13 @@ const (
 )
 
 func main() {
-	err := util.DownloadMNIST(mnistURL, localPath, trainImages, trainLabels, testImages, testLabels)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
+	/*
+		err := util.DownloadMNIST(mnistURL, localPath, trainImages, trainLabels, testImages, testLabels)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+	*/
 
 	rawTrainImgs, trainLbls, err := util.ReadData(localPath, trainImages, trainLabels)
 	if err != nil {
