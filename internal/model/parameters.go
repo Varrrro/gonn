@@ -9,6 +9,14 @@ type Parameters struct {
 	Mu  float64
 }
 
+// CreateDefaultParameters for neural network training.
+func CreateDefaultParameters() Parameters {
+	return Parameters{
+		Eta: defaultEta,
+		Mu:  defaultMu,
+	}
+}
+
 // SetEta to the given value.
 func (p *Parameters) SetEta(v float64) {
 	p.Eta = v

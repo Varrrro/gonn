@@ -38,7 +38,7 @@ func (n *Network) Backpropagate(target mat.Vector) {
 
 	n.Layers[len(n.Layers)-1].CalculateNeuronDeltas(diff)
 
-	for i := len(n.Layers) - 2; i >= 0; i++ {
+	for i := len(n.Layers) - 2; i >= 0; i-- {
 		nextLayerDeltas := n.Layers[i+1].GetNeuronDeltas()
 		nextLayerWeights := n.Layers[i+1].GetWeights()
 
@@ -61,12 +61,21 @@ func (n *Network) DoCorrectionStep() {
 	}
 }
 
+// UpdateEta of the network.
+func (n *Network) UpdateEta(epoch int) {
+	newEta := defaultEta / float64(1+epoch)
+	n.Params.SetEta(newEta)
+}
+
 // Train the network with the given patterns.
 func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
-	log.Println(">>> Training started")
+	log.Println(">> Training started")
 	start := time.Now()
 
 	for i := 0; i < epochs; i++ {
+		n.UpdateEta(i)
+		log.Printf("> Starting epoch %d", i)
+
 		for j, p := range patterns {
 			target := util.InitializeTarget(10, labels[j])
 
@@ -78,7 +87,7 @@ func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 	}
 
 	elapsed := time.Since(start)
-	log.Printf(">>> Training finished | Time elapsed: %f", elapsed.Seconds())
+	log.Printf(">> Training finished | Time elapsed: %f", elapsed.Seconds())
 }
 
 // Test the network with the given patterns.

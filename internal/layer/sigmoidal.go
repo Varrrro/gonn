@@ -18,11 +18,6 @@ type SigmoidalLayer struct {
 	NeuronDeltas mat.Vector
 }
 
-// GetOutput of this layer.
-func (l *SigmoidalLayer) GetOutput() mat.Vector {
-	return l.Output
-}
-
 // CreateSigmoidalLayer with the given values.
 func CreateSigmoidalLayer(nInput, nOutput int, weights *[]float64) *SigmoidalLayer {
 	return &SigmoidalLayer{
@@ -31,6 +26,21 @@ func CreateSigmoidalLayer(nInput, nOutput int, weights *[]float64) *SigmoidalLay
 		Weights:      mat.NewDense(nOutput, nInput, *weights),
 		WeightDeltas: mat.NewDense(nOutput, nInput, util.InitializeWeightDeltas(nInput, nOutput)),
 	}
+}
+
+// GetOutput of this layer.
+func (l *SigmoidalLayer) GetOutput() mat.Vector {
+	return l.Output
+}
+
+// GetNeuronDeltas of this layer.
+func (l *SigmoidalLayer) GetNeuronDeltas() mat.Vector {
+	return l.NeuronDeltas
+}
+
+// GetWeights of this layer.
+func (l *SigmoidalLayer) GetWeights() mat.Matrix {
+	return l.Weights
 }
 
 // FeedForward a set of features through this layer.
@@ -93,19 +103,16 @@ func (l *SigmoidalLayer) DoMomentumStep(mu float64) {
 func (l *SigmoidalLayer) DoCorrectionStep(eta float64) {
 	deltas := mat.NewDense(l.OutputSize, l.InputSize, nil)
 	newWeights := mat.NewDense(l.OutputSize, l.InputSize, nil)
-	newWeightDeltas := mat.NewDense(l.OutputSize, l.InputSize, nil)
 
 	for i := 0; i < l.OutputSize; i++ {
 		for j := 0; j < l.InputSize; j++ {
 			value := l.Input.AtVec(j) * l.NeuronDeltas.AtVec(i) * eta * -1
-
 			deltas.Set(i, j, value)
 		}
 	}
 
 	newWeights.Add(l.Weights, deltas)
-	newWeightDeltas.Add(l.Weights, deltas)
 
 	l.Weights = newWeights
-	l.WeightDeltas = newWeightDeltas
+	l.WeightDeltas = deltas
 }
