@@ -13,3 +13,6 @@
 
 # Data files
 data/
+
+# VSCode configuration files
+.vscode/
