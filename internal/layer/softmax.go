@@ -57,8 +57,10 @@ func (l *SoftmaxLayer) FeedForward(features mat.Vector) {
 		sum += math.Exp(z.AtVec(i))
 	}
 
+	max := mat.Max(z)
+
 	for i := 0; i < l.OutputSize; i++ {
-		output.SetVec(i, activation.Softmax(z.AtVec(i), sum))
+		output.SetVec(i, activation.Softmax(max, z.AtVec(i), sum))
 	}
 
 	l.Output = output
