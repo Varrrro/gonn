@@ -73,8 +73,9 @@ func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 	start := time.Now()
 
 	for i := 0; i < epochs; i++ {
-		n.UpdateEta(i)
 		log.Printf("> Starting epoch %d", i)
+
+		n.UpdateEta(i)
 
 		for j, p := range patterns {
 			target := util.InitializeTarget(10, labels[j])
