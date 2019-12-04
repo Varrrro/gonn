@@ -19,8 +19,8 @@ func InitMultilayer(trainImgs, testImgs *[]mat.Vector, trainLabels, testLabels *
 
 	nn := model.Network{Layers: []model.Layer{hiddenLayer, outputLayer}, Params: params}
 
-	nn.Train(*trainImgs, *trainLabels, 5)
+	nn.Train(*trainImgs, *trainLabels, 10)
 
-	nn.Test(*trainImgs, *trainLabels)
+	//nn.Test(*trainImgs, *trainLabels)
 	nn.Test(*testImgs, *testLabels)
 }

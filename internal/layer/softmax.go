@@ -71,7 +71,7 @@ func (l *SoftmaxLayer) CalculateNeuronDeltas(gradient mat.Vector) {
 	deltas := mat.NewVecDense(l.OutputSize, nil)
 
 	for i := 0; i < l.OutputSize; i++ {
-		value := l.Output.AtVec(i) * (1 - l.Output.AtVec(i)) * gradient.AtVec(i)
+		value := gradient.AtVec(i)
 		deltas.SetVec(i, value)
 	}
 
@@ -79,21 +79,10 @@ func (l *SoftmaxLayer) CalculateNeuronDeltas(gradient mat.Vector) {
 }
 
 // CalculateGradient of the error in this layer based on the next.
+//
+// This is not neccessary in a softmax layer.
 func (l *SoftmaxLayer) CalculateGradient(deltas mat.Vector, weights mat.Matrix) mat.Vector {
-	gradient := mat.NewVecDense(l.OutputSize, nil)
-	n, _ := weights.Dims()
-
-	for i := 0; i < l.OutputSize; i++ {
-		sum := 0.0
-
-		for j := 0; j < n; j++ {
-			sum += weights.At(j, i) * deltas.AtVec(j)
-		}
-
-		gradient.SetVec(i, sum)
-	}
-
-	return gradient
+	return nil
 }
 
 // DoMomentumStep with the given Mu.

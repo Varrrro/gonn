@@ -85,6 +85,8 @@ func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 			n.Backpropagate(target)
 			n.DoCorrectionStep()
 		}
+
+		n.Test(patterns, labels)
 	}
 
 	elapsed := time.Since(start)
