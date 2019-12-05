@@ -24,8 +24,8 @@ func CreateSigmoidalLayer(nInput, nOutput int) *SigmoidalLayer {
 	return &SigmoidalLayer{
 		inputSize:        nInput,
 		outputSize:       nOutput,
-		weights:          mat.NewDense(nOutput, nInput, util.InitializeWeights(nInput, nOutput)),
-		biases:           mat.NewVecDense(nOutput, util.InitializeBiases(nOutput)),
+		weights:          mat.NewDense(nOutput, nInput, util.InitializeRandom(nInput*nOutput)),
+		biases:           mat.NewVecDense(nOutput, util.InitializeRandom(nOutput)),
 		weightIncrements: mat.NewDense(nOutput, nInput, util.InitializeZeroes(nInput*nOutput)),
 		biasIncrements:   mat.NewVecDense(nOutput, util.InitializeZeroes(nOutput)),
 	}
