@@ -8,7 +8,7 @@ import (
 
 // InitMultilayer network with the given training and test sets.
 func InitMultilayer(trainImgs, testImgs *[]mat.Vector, trainLabels, testLabels *[]int) {
-	hiddenLayer := layer.CreateSigmoidalLayer(784, 256)
+	hiddenLayer := layer.CreateReluLayer(784, 256)
 	outputLayer := layer.CreateSoftmaxLayer(256, 10)
 
 	params := model.CreateDefaultParameters()

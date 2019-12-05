@@ -11,3 +11,8 @@ func Logistic(z float64) float64 {
 func Softmax(c, z, sum float64) float64 {
 	return math.Exp(z-c) / sum
 }
+
+// Relu activation function.
+func Relu(z float64) float64 {
+	return math.Max(0.0, z)
+}

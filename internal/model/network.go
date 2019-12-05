@@ -39,17 +39,18 @@ func (n *Network) Backpropagate(target mat.Vector) {
 
 		n.Layers[i].CalculateHiddenDeltas(nextLayerDeltas, nextLayerWeights)
 
-		//n.Layers[i+1].UpdateWeights(n.Params.Eta, n.Params.Mu)
-		n.Layers[i+1].DoCorrectionStep(n.Params.Eta)
+		n.Layers[i+1].UpdateWeights(n.Params.Eta, n.Params.Mu)
 	}
 }
 
+/*
 // DoMomentumStep at each layer.
 func (n *Network) DoMomentumStep() {
 	for _, l := range n.Layers {
 		l.DoMomentumStep(n.Params.Mu)
 	}
 }
+*/
 
 // UpdateEta of the network.
 func (n *Network) UpdateEta(epoch int) {
@@ -70,7 +71,6 @@ func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 		for j, p := range patterns {
 			target := util.InitializeTarget(10, labels[j])
 
-			n.DoMomentumStep()
 			n.FeedForward(p)
 			n.Backpropagate(target)
 		}
