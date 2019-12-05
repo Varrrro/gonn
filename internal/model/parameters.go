@@ -1,6 +1,6 @@
 package model
 
-const defaultEta = 0.5
+const defaultEta = 0.1
 const defaultMu = 0.5
 
 // Parameters for neural network training.

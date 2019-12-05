@@ -2,7 +2,6 @@ package layer
 
 import (
 	"github.com/varrrro/gonn/internal/functions"
-	"github.com/varrrro/gonn/internal/util"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -19,12 +18,12 @@ type ReluLayer struct {
 }
 
 // CreateReluLayer with the given size.
-func CreateReluLayer(nInput, nOutput int) *ReluLayer {
+func CreateReluLayer(nInput, nOutput int, weights, biases []float64) *ReluLayer {
 	return &ReluLayer{
 		inputSize:  nInput,
 		outputSize: nOutput,
-		weights:    mat.NewDense(nOutput, nInput, util.InitializeRandom(nInput*nOutput)),
-		biases:     mat.NewVecDense(nOutput, util.InitializeRandom(nOutput)),
+		weights:    mat.NewDense(nOutput, nInput, weights),
+		biases:     mat.NewVecDense(nOutput, biases),
 	}
 }
 
@@ -89,7 +88,7 @@ func (l *ReluLayer) CalculateHiddenDeltas(nextDeltas mat.Vector, nextWeights mat
 }
 
 // UpdateWeights and biases of the layer with the given Eta.
-func (l *ReluLayer) UpdateWeights(eta, mu float64) {
+func (l *ReluLayer) UpdateWeights(eta float64) {
 	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
 	newBiases := mat.NewVecDense(l.outputSize, nil)
 

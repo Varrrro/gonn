@@ -10,7 +10,5 @@ type Layer interface {
 	FeedForward(mat.Vector)
 	CalculateDeltas(mat.Vector)
 	CalculateHiddenDeltas(mat.Vector, mat.Matrix)
-	UpdateWeights(float64, float64)
-	//DoMomentumStep(float64)
-	//DoCorrectionStep(float64)
+	UpdateWeights(float64)
 }

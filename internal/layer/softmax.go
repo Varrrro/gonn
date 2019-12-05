@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/varrrro/gonn/internal/functions"
-	"github.com/varrrro/gonn/internal/util"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -20,12 +19,12 @@ type SoftmaxLayer struct {
 }
 
 // CreateSoftmaxLayer with the given size.
-func CreateSoftmaxLayer(nInput, nOutput int) *SoftmaxLayer {
+func CreateSoftmaxLayer(nInput, nOutput int, weights, biases []float64) *SoftmaxLayer {
 	return &SoftmaxLayer{
 		inputSize:  nInput,
 		outputSize: nOutput,
-		weights:    mat.NewDense(nOutput, nInput, util.InitializeRandom(nInput*nOutput)),
-		biases:     mat.NewVecDense(nOutput, util.InitializeRandom(nOutput)),
+		weights:    mat.NewDense(nOutput, nInput, weights),
+		biases:     mat.NewVecDense(nOutput, biases),
 	}
 }
 
@@ -81,7 +80,7 @@ func (l *SoftmaxLayer) CalculateDeltas(t mat.Vector) {
 func (l *SoftmaxLayer) CalculateHiddenDeltas(nextDeltas mat.Vector, nextWeights mat.Matrix) {}
 
 // UpdateWeights and biases of the layer with the given Eta.
-func (l *SoftmaxLayer) UpdateWeights(eta, mu float64) {
+func (l *SoftmaxLayer) UpdateWeights(eta float64) {
 	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
 	newBiases := mat.NewVecDense(l.outputSize, nil)
 

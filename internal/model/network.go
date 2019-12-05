@@ -38,14 +38,16 @@ func (n *Network) Backpropagate(target mat.Vector) {
 		nextLayerWeights := n.Layers[i+1].GetWeights()
 
 		n.Layers[i].CalculateHiddenDeltas(nextLayerDeltas, nextLayerWeights)
+	}
 
-		n.Layers[i+1].UpdateWeights(n.Params.Eta, n.Params.Mu)
+	for i := 0; i < len(n.Layers); i++ {
+		n.Layers[i].UpdateWeights(n.Params.Eta)
 	}
 }
 
 // UpdateEta of the network.
 func (n *Network) UpdateEta(epoch int) {
-	newEta := defaultEta / float64(1+epoch)
+	newEta := defaultEta / float64(1+epoch/2)
 	n.Params.SetEta(newEta)
 }
 
@@ -55,9 +57,9 @@ func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 	start := time.Now()
 
 	for i := 0; i < epochs; i++ {
-		log.Printf("> Starting epoch %d", i)
-
 		n.UpdateEta(i)
+
+		log.Printf("> Starting epoch %d | Eta: %f", i, n.Params.Eta)
 
 		for j, p := range patterns {
 			target := util.InitializeTarget(10, labels[j])

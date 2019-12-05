@@ -2,7 +2,6 @@ package layer
 
 import (
 	"github.com/varrrro/gonn/internal/functions"
-	"github.com/varrrro/gonn/internal/util"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -18,12 +17,12 @@ type SigmoidalLayer struct {
 }
 
 // CreateSigmoidalLayer with the given size.
-func CreateSigmoidalLayer(nInput, nOutput int) *SigmoidalLayer {
+func CreateSigmoidalLayer(nInput, nOutput int, weights, biases []float64) *SigmoidalLayer {
 	return &SigmoidalLayer{
 		inputSize:  nInput,
 		outputSize: nOutput,
-		weights:    mat.NewDense(nOutput, nInput, util.InitializeRandom(nInput*nOutput)),
-		biases:     mat.NewVecDense(nOutput, util.InitializeRandom(nOutput)),
+		weights:    mat.NewDense(nOutput, nInput, weights),
+		biases:     mat.NewVecDense(nOutput, biases),
 	}
 }
 
@@ -91,7 +90,7 @@ func (l *SigmoidalLayer) CalculateHiddenDeltas(nextDeltas mat.Vector, nextWeight
 }
 
 // UpdateWeights and biases of the layer with the given Eta.
-func (l *SigmoidalLayer) UpdateWeights(eta, mu float64) {
+func (l *SigmoidalLayer) UpdateWeights(eta float64) {
 	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
 	newBiases := mat.NewVecDense(l.outputSize, nil)
 
