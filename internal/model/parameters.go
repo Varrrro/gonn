@@ -1,28 +1,20 @@
 package model
 
-const defaultEta = 0.1
-const defaultMu = 0.5
-
 // Parameters for neural network training.
 type Parameters struct {
-	Eta float64
-	Mu  float64
+	initialEta float64
+	Eta        float64
 }
 
-// CreateDefaultParameters for neural network training.
-func CreateDefaultParameters() Parameters {
+// CreateParameters for neural network training.
+func CreateParameters(eta float64) Parameters {
 	return Parameters{
-		Eta: defaultEta,
-		Mu:  defaultMu,
+		initialEta: eta,
+		Eta:        eta,
 	}
 }
 
-// SetEta to the given value.
-func (p *Parameters) SetEta(v float64) {
-	p.Eta = v
-}
-
-// SetMu to the given value.
-func (p *Parameters) SetMu(v float64) {
-	p.Mu = v
+// UpdateEta for the given epoch.
+func (p *Parameters) UpdateEta(epoch int) {
+	p.Eta = p.initialEta / float64(1+epoch/2)
 }

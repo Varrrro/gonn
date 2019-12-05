@@ -45,19 +45,13 @@ func (n *Network) Backpropagate(target mat.Vector) {
 	}
 }
 
-// UpdateEta of the network.
-func (n *Network) UpdateEta(epoch int) {
-	newEta := defaultEta / float64(1+epoch/2)
-	n.Params.SetEta(newEta)
-}
-
 // Train the network with the given patterns.
 func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 	log.Println(">> Training started")
 	start := time.Now()
 
 	for i := 0; i < epochs; i++ {
-		n.UpdateEta(i)
+		n.Params.UpdateEta(i)
 
 		log.Printf("> Starting epoch %d | Eta: %f", i, n.Params.Eta)
 

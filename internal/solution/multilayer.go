@@ -20,7 +20,8 @@ func InitMultilayer(trainImgs, testImgs *[]mat.Vector, trainLabels, testLabels *
 	hiddenLayer := layer.CreateSigmoidalLayer(784, 256, hiddenWeights, hiddenBiases)
 	outputLayer := layer.CreateSoftmaxLayer(256, 10, outputWeights, outputBiases)
 
-	params := model.CreateDefaultParameters()
+	// Create the nerwork parameters
+	params := model.CreateParameters(0.1)
 
 	// Create the network
 	nn := model.Network{Layers: []model.Layer{hiddenLayer, outputLayer}, Params: params}
