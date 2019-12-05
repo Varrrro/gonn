@@ -31,19 +31,16 @@ func (n *Network) FeedForward(pattern mat.Vector) {
 
 // Backpropagate the error through the network, updating the weights.
 func (n *Network) Backpropagate(target mat.Vector) {
-	output := n.GetOutput()
-
-	diff := mat.NewVecDense(output.Len(), nil)
-	diff.SubVec(output, target)
-
-	n.Layers[len(n.Layers)-1].CalculateNeuronDeltas(diff)
+	n.Layers[len(n.Layers)-1].CalculateDeltas(target)
 
 	for i := len(n.Layers) - 2; i >= 0; i-- {
-		nextLayerDeltas := n.Layers[i+1].GetNeuronDeltas()
+		nextLayerDeltas := n.Layers[i+1].GetDeltas()
 		nextLayerWeights := n.Layers[i+1].GetWeights()
 
-		gradient := n.Layers[i].CalculateGradient(nextLayerDeltas, nextLayerWeights)
-		n.Layers[i].CalculateNeuronDeltas(gradient)
+		n.Layers[i].CalculateHiddenDeltas(nextLayerDeltas, nextLayerWeights)
+
+		//n.Layers[i+1].UpdateWeights(n.Params.Eta, n.Params.Mu)
+		n.Layers[i+1].DoCorrectionStep(n.Params.Eta)
 	}
 }
 
@@ -51,13 +48,6 @@ func (n *Network) Backpropagate(target mat.Vector) {
 func (n *Network) DoMomentumStep() {
 	for _, l := range n.Layers {
 		l.DoMomentumStep(n.Params.Mu)
-	}
-}
-
-// DoCorrectionStep at each layer.
-func (n *Network) DoCorrectionStep() {
-	for _, l := range n.Layers {
-		l.DoCorrectionStep(n.Params.Eta)
 	}
 }
 
@@ -83,7 +73,6 @@ func (n *Network) Train(patterns []mat.Vector, labels []int, epochs int) {
 			n.DoMomentumStep()
 			n.FeedForward(p)
 			n.Backpropagate(target)
-			n.DoCorrectionStep()
 		}
 
 		n.Test(patterns, labels)

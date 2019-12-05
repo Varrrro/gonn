@@ -1,118 +1,170 @@
 package layer
 
 import (
-	"gonum.org/v1/gonum/mat"
-
-	"github.com/varrrro/gonn/internal/activation"
+	"github.com/varrrro/gonn/internal/functions"
 	"github.com/varrrro/gonn/internal/util"
+	"gonum.org/v1/gonum/mat"
 )
 
 // SigmoidalLayer with logistic activation function.
 type SigmoidalLayer struct {
-	InputSize    int
-	OutputSize   int
-	Input        mat.Vector
-	Output       mat.Vector
-	Weights      mat.Matrix
-	WeightDeltas mat.Matrix
-	NeuronDeltas mat.Vector
+	inputSize        int
+	outputSize       int
+	input            mat.Vector
+	output           mat.Vector
+	weights          mat.Matrix
+	biases           mat.Vector
+	deltas           mat.Vector
+	weightIncrements mat.Matrix
+	biasIncrements   mat.Vector
 }
 
-// CreateSigmoidalLayer with the given values.
-func CreateSigmoidalLayer(nInput, nOutput int, weights *[]float64) *SigmoidalLayer {
+// CreateSigmoidalLayer with the given size.
+func CreateSigmoidalLayer(nInput, nOutput int) *SigmoidalLayer {
 	return &SigmoidalLayer{
-		InputSize:    nInput,
-		OutputSize:   nOutput,
-		Weights:      mat.NewDense(nOutput, nInput, *weights),
-		WeightDeltas: mat.NewDense(nOutput, nInput, util.InitializeWeightDeltas(nInput, nOutput)),
+		inputSize:        nInput,
+		outputSize:       nOutput,
+		weights:          mat.NewDense(nOutput, nInput, util.InitializeWeights(nInput, nOutput)),
+		biases:           mat.NewVecDense(nOutput, util.InitializeBiases(nOutput)),
+		weightIncrements: mat.NewDense(nOutput, nInput, util.InitializeZeroes(nInput*nOutput)),
+		biasIncrements:   mat.NewVecDense(nOutput, util.InitializeZeroes(nOutput)),
 	}
 }
 
-// GetOutput of this layer.
+// GetOutput of the layer.
 func (l *SigmoidalLayer) GetOutput() mat.Vector {
-	return l.Output
+	return l.output
 }
 
-// GetNeuronDeltas of this layer.
-func (l *SigmoidalLayer) GetNeuronDeltas() mat.Vector {
-	return l.NeuronDeltas
-}
-
-// GetWeights of this layer.
+// GetWeights of the layer.
 func (l *SigmoidalLayer) GetWeights() mat.Matrix {
-	return l.Weights
+	return l.weights
 }
 
-// FeedForward a set of features through this layer.
-func (l *SigmoidalLayer) FeedForward(features mat.Vector) {
-	l.Input = features
+// GetDeltas of the layer.
+func (l *SigmoidalLayer) GetDeltas() mat.Vector {
+	return l.deltas
+}
 
-	output := mat.NewVecDense(l.OutputSize, nil)
-	z := mat.NewVecDense(l.OutputSize, nil)
-	z.MulVec(l.Weights, features)
+// FeedForward an input through the layer.
+func (l *SigmoidalLayer) FeedForward(x mat.Vector) {
+	l.input = x
 
-	for i := 0; i < l.OutputSize; i++ {
-		output.SetVec(i, activation.Logistic(z.AtVec(i)))
+	z := mat.NewVecDense(l.outputSize, nil)
+	z.MulVec(l.weights, l.input)
+	z.AddVec(z, l.biases)
+
+	y := mat.NewVecDense(l.outputSize, nil)
+	for i := 0; i < l.outputSize; i++ {
+		value := functions.Logistic(z.AtVec(i))
+		y.SetVec(i, value)
 	}
 
-	l.Output = output
+	l.output = y
 }
 
-// CalculateNeuronDeltas with the error gradient.
-func (l *SigmoidalLayer) CalculateNeuronDeltas(gradient mat.Vector) {
-	deltas := mat.NewVecDense(l.OutputSize, nil)
+// CalculateDeltas for the layer with the given target.
+//
+// Not implemented in a hidden layer.
+func (l *SigmoidalLayer) CalculateDeltas(t mat.Vector) {
+	diff := mat.NewVecDense(l.outputSize, nil)
+	diff.SubVec(l.output, t)
 
-	for i := 0; i < l.OutputSize; i++ {
-		value := l.Output.AtVec(i) * (1 - l.Output.AtVec(i)) * gradient.AtVec(i)
-		deltas.SetVec(i, value)
+	d := mat.NewVecDense(l.outputSize, nil)
+	for i := 0; i < l.outputSize; i++ {
+		value := l.output.AtVec(i) * (1.0 - l.output.AtVec(i)) * diff.AtVec(i)
+		d.SetVec(i, value)
 	}
 
-	l.NeuronDeltas = deltas
+	l.deltas = d
 }
 
-// CalculateGradient of the error in this layer based on the next.
-func (l *SigmoidalLayer) CalculateGradient(deltas mat.Vector, weights mat.Matrix) mat.Vector {
-	gradient := mat.NewVecDense(l.OutputSize, nil)
-	n, _ := weights.Dims()
+// CalculateHiddenDeltas for the layer with the values from the next layer.
+func (l *SigmoidalLayer) CalculateHiddenDeltas(nextDeltas mat.Vector, nextWeights mat.Matrix) {
+	d := mat.NewVecDense(l.outputSize, nil)
 
-	for i := 0; i < l.OutputSize; i++ {
+	for i := 0; i < l.outputSize; i++ {
 		sum := 0.0
-
-		for j := 0; j < n; j++ {
-			sum += weights.At(j, i) * deltas.AtVec(j)
+		for j := 0; j < nextDeltas.Len(); j++ {
+			sum += nextDeltas.AtVec(j) * nextWeights.At(j, i)
 		}
 
-		gradient.SetVec(i, sum)
+		value := l.output.AtVec(i) * (1.0 - l.output.AtVec(i)) * sum
+		d.SetVec(i, value)
 	}
 
-	return gradient
+	l.deltas = d
+}
+
+// UpdateWeights and biases of the layer with the given Eta.
+func (l *SigmoidalLayer) UpdateWeights(eta, mu float64) {
+	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
+	newBiases := mat.NewVecDense(l.outputSize, nil)
+
+	newWeightIncrements := mat.NewDense(l.outputSize, l.inputSize, nil)
+	newBiasIncrements := mat.NewVecDense(l.outputSize, nil)
+
+	for i := 0; i < l.outputSize; i++ {
+		for j := 0; j < l.inputSize; j++ {
+			weightIncrement := (mu * l.weightIncrements.At(i, j)) - (eta * l.deltas.AtVec(i) * l.input.AtVec(j))
+			newWeights.Set(i, j, l.weights.At(i, j)+weightIncrement)
+			newWeightIncrements.Set(i, j, weightIncrement)
+		}
+
+		biasIncrement := (mu * l.biasIncrements.AtVec(i)) - (eta * l.deltas.AtVec(i))
+		newBiases.SetVec(i, l.biases.AtVec(i)+biasIncrement)
+		newBiasIncrements.SetVec(i, biasIncrement)
+	}
+
+	l.weights = newWeights
+	l.biases = newBiases
+
+	l.weightIncrements = newWeightIncrements
+	l.biasIncrements = newBiasIncrements
 }
 
 // DoMomentumStep with the given Mu.
 func (l *SigmoidalLayer) DoMomentumStep(mu float64) {
-	increment := mat.NewDense(l.OutputSize, l.InputSize, nil)
-	newWeights := mat.NewDense(l.OutputSize, l.InputSize, nil)
+	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
+	newBiases := mat.NewVecDense(l.outputSize, nil)
 
-	increment.Scale(mu, l.WeightDeltas)
-	newWeights.Add(l.Weights, increment)
+	for i := 0; i < l.outputSize; i++ {
+		for j := 0; j < l.inputSize; j++ {
+			weightIncrement := (mu * l.weightIncrements.At(i, j))
+			newWeights.Set(i, j, l.weights.At(i, j)+weightIncrement)
+		}
 
-	l.Weights = newWeights
+		biasIncrement := (mu * l.biasIncrements.AtVec(i))
+		newBiases.SetVec(i, l.biases.AtVec(i)+biasIncrement)
+	}
+
+	l.weights = newWeights
+	l.biases = newBiases
 }
 
 // DoCorrectionStep with the given Eta.
 func (l *SigmoidalLayer) DoCorrectionStep(eta float64) {
-	deltas := mat.NewDense(l.OutputSize, l.InputSize, nil)
-	newWeights := mat.NewDense(l.OutputSize, l.InputSize, nil)
+	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
+	newBiases := mat.NewVecDense(l.outputSize, nil)
 
-	for i := 0; i < l.OutputSize; i++ {
-		for j := 0; j < l.InputSize; j++ {
-			value := l.Input.AtVec(j) * l.NeuronDeltas.AtVec(i) * eta * -1
-			deltas.Set(i, j, value)
+	newWeightIncrements := mat.NewDense(l.outputSize, l.inputSize, nil)
+	newBiasIncrements := mat.NewVecDense(l.outputSize, nil)
+
+	for i := 0; i < l.outputSize; i++ {
+		for j := 0; j < l.inputSize; j++ {
+			weightIncrement := -1.0 * eta * l.deltas.AtVec(i) * l.input.AtVec(j)
+			newWeights.Set(i, j, l.weights.At(i, j)+weightIncrement)
+			newWeightIncrements.Set(i, j, weightIncrement)
 		}
+
+		biasIncrement := - -1.0 * eta * l.deltas.AtVec(i)
+		newBiases.SetVec(i, l.biases.AtVec(i)+biasIncrement)
+		newBiasIncrements.SetVec(i, biasIncrement)
 	}
 
-	newWeights.Add(l.Weights, deltas)
+	l.weights = newWeights
+	l.biases = newBiases
 
-	l.Weights = newWeights
-	l.WeightDeltas = deltas
+	l.weightIncrements = newWeightIncrements
+	l.biasIncrements = newBiasIncrements
 }
