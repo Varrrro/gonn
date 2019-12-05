@@ -52,12 +52,12 @@ func (l *SoftmaxLayer) FeedForward(features mat.Vector) {
 	z := mat.NewVecDense(l.OutputSize, nil)
 	z.MulVec(l.Weights, features)
 
+	max := mat.Max(z)
+	
 	sum := 0.0
 	for i := 0; i < l.OutputSize; i++ {
-		sum += math.Exp(z.AtVec(i))
+		sum += math.Exp(z.AtVec(i)+max)
 	}
-
-	max := mat.Max(z)
 
 	for i := 0; i < l.OutputSize; i++ {
 		output.SetVec(i, activation.Softmax(max, z.AtVec(i), sum))
