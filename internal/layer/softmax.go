@@ -17,8 +17,6 @@ type SoftmaxLayer struct {
 	weights    mat.Matrix
 	biases     mat.Vector
 	deltas     mat.Vector
-	//weightIncrements mat.Matrix
-	//biasIncrements   mat.Vector
 }
 
 // CreateSoftmaxLayer with the given size.
@@ -28,8 +26,6 @@ func CreateSoftmaxLayer(nInput, nOutput int) *SoftmaxLayer {
 		outputSize: nOutput,
 		weights:    mat.NewDense(nOutput, nInput, util.InitializeRandom(nInput*nOutput)),
 		biases:     mat.NewVecDense(nOutput, util.InitializeRandom(nOutput)),
-		//weightIncrements: mat.NewDense(nOutput, nInput, util.InitializeZeroes(nInput*nOutput)),
-		//biasIncrements:   mat.NewVecDense(nOutput, util.InitializeZeroes(nOutput)),
 	}
 }
 
@@ -102,59 +98,3 @@ func (l *SoftmaxLayer) UpdateWeights(eta, mu float64) {
 	l.weights = newWeights
 	l.biases = newBiases
 }
-
-/*
-// DoMomentumStep with the given Mu.
-func (l *SoftmaxLayer) DoMomentumStep(mu float64) {
-	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
-	newBiases := mat.NewVecDense(l.outputSize, nil)
-
-	newWeightIncrements := mat.NewDense(l.outputSize, l.inputSize, nil)
-	newBiasIncrements := mat.NewVecDense(l.outputSize, nil)
-
-	for i := 0; i < l.outputSize; i++ {
-		for j := 0; j < l.inputSize; j++ {
-			weightIncrement := (mu * l.weightIncrements.At(i, j))
-			newWeights.Set(i, j, l.weights.At(i, j)+weightIncrement)
-			newWeightIncrements.Set(i, j, weightIncrement)
-		}
-
-		biasIncrement := (mu * l.biasIncrements.AtVec(i))
-		newBiases.SetVec(i, l.biases.AtVec(i)+biasIncrement)
-		newBiasIncrements.SetVec(i, biasIncrement)
-	}
-
-	l.weights = newWeights
-	l.biases = newBiases
-
-	l.weightIncrements = newWeightIncrements
-	l.biasIncrements = newBiasIncrements
-}
-
-// DoCorrectionStep with the given Eta.
-func (l *SoftmaxLayer) DoCorrectionStep(eta float64) {
-	newWeights := mat.NewDense(l.outputSize, l.inputSize, nil)
-	newBiases := mat.NewVecDense(l.outputSize, nil)
-
-	newWeightIncrements := mat.NewDense(l.outputSize, l.inputSize, nil)
-	newBiasIncrements := mat.NewVecDense(l.outputSize, nil)
-
-	for i := 0; i < l.outputSize; i++ {
-		for j := 0; j < l.inputSize; j++ {
-			weightIncrement := -1.0 * eta * l.deltas.AtVec(i) * l.input.AtVec(j)
-			newWeights.Set(i, j, l.weights.At(i, j)+weightIncrement)
-			newWeightIncrements.Set(i, j, l.weightIncrements.At(i, j)+weightIncrement)
-		}
-
-		biasIncrement := - -1.0 * eta * l.deltas.AtVec(i)
-		newBiases.SetVec(i, l.biases.AtVec(i)+biasIncrement)
-		newBiasIncrements.SetVec(i, l.biasIncrements.AtVec(i)+biasIncrement)
-	}
-
-	l.weights = newWeights
-	l.biases = newBiases
-
-	l.weightIncrements = newWeightIncrements
-	l.biasIncrements = newBiasIncrements
-}
-*/

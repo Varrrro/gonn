@@ -16,8 +16,6 @@ type ReluLayer struct {
 	biases     mat.Vector
 	deltas     mat.Vector
 	netInputs  mat.Vector
-	//weightIncrements mat.Matrix
-	//biasIncrements   mat.Vector
 }
 
 // CreateReluLayer with the given size.
@@ -27,8 +25,6 @@ func CreateReluLayer(nInput, nOutput int) *ReluLayer {
 		outputSize: nOutput,
 		weights:    mat.NewDense(nOutput, nInput, util.InitializeRandom(nInput*nOutput)),
 		biases:     mat.NewVecDense(nOutput, util.InitializeRandom(nOutput)),
-		//weightIncrements: mat.NewDense(nOutput, nInput, util.InitializeZeroes(nInput*nOutput)),
-		//biasIncrements:   mat.NewVecDense(nOutput, util.InitializeZeroes(nOutput)),
 	}
 }
 

@@ -43,15 +43,6 @@ func (n *Network) Backpropagate(target mat.Vector) {
 	}
 }
 
-/*
-// DoMomentumStep at each layer.
-func (n *Network) DoMomentumStep() {
-	for _, l := range n.Layers {
-		l.DoMomentumStep(n.Params.Mu)
-	}
-}
-*/
-
 // UpdateEta of the network.
 func (n *Network) UpdateEta(epoch int) {
 	newEta := defaultEta / float64(1+epoch)
